@@ -93,12 +93,9 @@
                               </li>
                               <li v-else-if="item.type === 2" style="width: 100%;height: auto">
                                 <div style="width: 150px;">
-                                  <img :src="item.picURL[0].thumbUrl" style="width: 100%;"
-                                       @click="updateActive(index)"/>
-                                  <video style="display: none;" type="video.mp4"
-                                         controls="controls" :class="active === index?'audio1':''" >
-                                    <source :src="item.videoUrl" type="video/mp4">
-                                  </video>
+                                  <img :src="item.picURL[0].thumbUrl" style="width: 100%;position: relative;"
+                                       @click="updateActive(index,item.videoUrl)"/>
+
                                 </div>
                               </li>
                               <div v-else-if="item.type === 3">
@@ -203,6 +200,13 @@
         </div>
       </div>
     </div>
+
+    <video class="audio1" type="video.mp4" v-show="videoShow" ref="video" controls="controls" style="display: block;">
+    </video>
+    <!--<video style="width: 100%;height: 100%;" type="video.mp4"
+           controls="controls" :class="active === index?'audio1':''" >
+      <source :src="item.videoUrl" type="video/mp4">
+    </video>-->
   </div>
   <!--</body>
   </html>-->
@@ -228,6 +232,7 @@
     data() {
       return {
         replyShow: false,
+        videoShow:false,
         active:'',
         imgUrl1: require('./../assets/images/bg.png'),
         //imgUrl2: require('./../assets/images/check_true.png'),
@@ -276,8 +281,8 @@
 
     },
     beforeRouteLeave(to,from,next){
-      if(this.active !== ''){
-        this.active = '';
+      if(this.videoShow){
+        this.videoShow = false;
       }else if (this.replyShow){
         this.replyShow = false;
       } else{
@@ -291,9 +296,11 @@
     methods: {
       changeReplyShow(){
         this.replyShow = false;
+
       },
-      updateActive(index){
+      updateActive(index,url){
         this.active = index;
+        this.$refs.video.src = url;
       },
       updateData: function () {
         let _this = this;
