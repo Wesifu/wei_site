@@ -60,6 +60,10 @@
 
       }
     },
+    created(){
+      this.global.clientWidth = document.body.clientWidth;
+      this.global.clientHeight = document.body.clientHeight;
+    },
     methods: {
 
       loginUser: function () {
@@ -105,14 +109,24 @@
       },
       getQueryString: function (name) {
         let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+       // let r = window.location.search.substr(1).match(reg);
+        alert(window.location)
         let r = window.location.search.substr(1).match(reg);
         if (r != null)
           return unescape(r[2]);
         return null;
       },
-      wxLogin: function () {
 
-        let code = this.getQueryString("code");
+      wxLogin: function () {
+        let appId = "wx42e58d40d776790f";
+        let URI = this.$route.path;
+        let REDIRECT_URI=encodeURIComponent(URI);
+        let SCOPE="snsapi_userinfo";//snsapi_login
+
+        window.location.href ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=" + appId + "&redirect_uri=" + REDIRECT_URI + "&response_type=code&scope=" + SCOPE + "&state=STATE#wechat_redirect";
+
+        let code = this.getQueryString('code');
+
         $.ajax({
           url: 'https://qinqinyx.cn/timeLang/getWxLogin',
           data: {"code": code},

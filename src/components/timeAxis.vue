@@ -92,9 +92,11 @@
 
                               </li>
                               <li v-else-if="item.type === 2" style="width: 100%;height: auto">
-                                <div style="width: 100px;height: 200px">
-                                  <video style="width: 100%;height: 100%;" type="video.mp4"
-                                         controls="controls">
+                                <div style="width: 150px;">
+                                  <img :src="item.picURL[0].thumbUrl" style="width: 100%;"
+                                       @click="updateActive(index)"/>
+                                  <video style="display: none;" type="video.mp4"
+                                         controls="controls" :class="active === index?'audio1':''" >
                                     <source :src="item.videoUrl" type="video/mp4">
                                   </video>
                                 </div>
@@ -113,31 +115,34 @@
                         <div id="comment" style="display: inline-block;width: 95%;padding:10px 0 10px 0;">
                           <div style="width: 85%;">
                             <ul class="ul_bottom">
-                              <li id="_zan" v-on:click="zan(item.lsh)">
+                              <li id="_zan" v-on:click="zan(item.lsh,index)">
                                 <!--<div v-if="item.fabulousCount > 0">
                                   <img :id="'zan-img-'+item.lsh"
                                        src="../assets/images/love_true.png"
                                        alt="">
                                 </div>
                                 <div v-else>-->
-                                <div style="width: 100%;height: 0;padding-bottom: 100%;">
+                                <div> <!--style="width: 100%;height: 0;padding-bottom: 100%;"-->
                                   <img :id="'zan-img-'+item.lsh"
-                                       :src="item.isPress === 0 ? 'https://qinqinyx.cn/site/static/images/ic_event_post_item_praise_dis.png' : 'https://qinqinyx.cn/site/static/images/love_true.png'"
+                                       :src="item.isPress == 0 ? 'https://qinqinyx.cn/site/static/images/ic_event_post_item_praise_dis.png' :
+                                          'https://qinqinyx.cn/site/static/images/love_true.png'"
                                        alt="">
                                 </div>
                                 <!--</div>-->
                               </li>
                               <li>
-                                <span :id="'zan-num-'+item.lsh" style="font-size:14px">{{item.fabulousCount === undefined ? 0 : item.fabulousCount}}</span>
+                                <span :id="'zan-num-'+item.lsh" style="font-size:14px">
+                                  {{item.fabulousCount === undefined ? 0 : item.fabulousCount}}
+                                </span>
                               </li>
                               <li id="communicate">
-                                <a v-on:click="communicate(item.lsh)"
+                                <a
                                    class="show">
-                                  <img src="../assets/images/comment_ico.png" alt="">
+                                  <img src="../assets/images/comment_ico.png" alt="" @click="communicate(item.lsh)" />
                                 </a>
                               </li>
-                              <li v-if="item.open === 2">
-                                <img src="../assets/images/share_ico.png" alt=""
+                              <li v-show="item.open === 2">
+                                <img src="https://qinqinyx.cn/site/static/images/share_ico.png" alt=""
                                      onclick="shareWebview();">
                               </li>
                             </ul>
@@ -184,13 +189,13 @@
         </div>
       </div>
     </div>
-    <div class="box">
-      <div class="box1">
+    <div class="box" v-show="replyShow" @click="changeReplyShow">
+      <div class="box1" >
 
         <div id="_input_box"
              style="position: relative;top:92%;width: 100%;height: 40px;display: inline-block;padding: 2px;">
         <textarea id="inputId" wrap="physical" placeholder="回复" v-model="commentContent"
-                  style="resize:none;font-size: 18px;width: 76%;height: 100%;float: left;border: none;vertical-align:middle;overflow:hidden;"></textarea>
+                  style="resize:none;font-size: 18px;width: 76%;height: 100%;float: left;border: none;vertical-align:middle;overflow:hidden;" ></textarea>
           <button type="button" id="btn" @click="upload"
                   style="width: 23%;height: 37px;vertical-align: middle;float: left;background-color: #e5e5e5;border: none;">
             评论
@@ -222,6 +227,8 @@
     },
     data() {
       return {
+        replyShow: false,
+        active:'',
         imgUrl1: require('./../assets/images/bg.png'),
         //imgUrl2: require('./../assets/images/check_true.png'),
         /*        userCode: this.$route.query.userCode,
@@ -237,7 +244,9 @@
         commentContent: '',
         popTitle: '我是标题',
         popContent: '气泡内容气泡内容',
-        popPlacement: 'top'
+        popPlacement: 'top',
+        curPage: 1,
+        pageRows: 10,
       }
     },
     created() {
@@ -247,7 +256,9 @@
           url: "https://qinqinyx.cn/timeLang/timeAxis",
           data: {
             "userCode": _this.global.userCode,
-            "groupId": _this.global.groupId
+            "groupId": _this.global.groupId,
+            "cur":this.curPage,
+            "rows":this.pageRows,
           },
           dataType: 'json',
           success: function (result) {
@@ -264,24 +275,39 @@
 
 
     },
+    beforeRouteLeave(to,from,next){
+      if(this.active !== ''){
+        this.active = '';
+      }else if (this.replyShow){
+        this.replyShow = false;
+      } else{
+        next();
+      }
+    },
     mounted() {
 
       document.getElementById("space_main").addEventListener('scroll', this.handleScroll, true);
     },
     methods: {
-      upateData: function () {
+      changeReplyShow(){
+        this.replyShow = false;
+      },
+      updateActive(index){
+        this.active = index;
+      },
+      updateData: function () {
         let _this = this;
+        this.curPage = this.curPage + 1;
         $.ajax({
           url: "https://qinqinyx.cn/timeLang/timeAxis",
           data: {
             "userCode": _this.global.userCode,
-            "groupId": _this.global.groupId
+            "groupId": _this.global.groupId,
+            "cur":_this.curPage,
+            "rows":_this.pageRows,
           },
           dataType: 'json',
           success: function (result) {
-            _this.group = result.group;
-            _this.user = result.user;
-            _this.list = result.list;
 
             _this.list = _this.list.concat(result.list);
           }
@@ -295,12 +321,14 @@
         console.log("clientHeight", clientHeight);
         console.log("scrollTop", scrollTop);
         console.log("scrollHeight", scrollHeight);
-        if (clientHeight + scrollTop >= scrollHeight - 20) {
-          this.upateData();
+        console.log("=======", clientHeight + scrollTop >= scrollHeight - 100);
+        if (clientHeight + scrollTop >= scrollHeight - 100) {
+          this.updateData();
         }
       },
-      zan: function (timeAxisId) {
+      zan: function (timeAxisId,index) {
         let num = $("#zan-num-" + timeAxisId).val();
+        this.list[index].isPress = 1;
         if (num === 0) {
           $("#zan-img-" + timeAxisId).attr('src', "https://qiniqnyx.cn/site/static/images/love_true.png");
         }
@@ -322,10 +350,12 @@
         });
       },
       communicate(lsh) {
+
         this.commentsMsgLsh = lsh;
-        document.querySelector('#inputId').scrollIntoView();
+        /*document.querySelector('#inputId').scrollIntoView();
         jQuery('.box').css('visibility', 'visible');
-        jQuery("#inputId").focus();
+        jQuery("#inputId").focus();*/
+        this.replyShow = true;
       },
       upload: function () {
         //alert(this.commentsMsgLsh + "  " + this.userCode + "    " + this.commentContent);
@@ -560,11 +590,10 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.2);
-    z-index: 1;
+    z-index: 9;
     top: 0;
     margin: 0;
     padding: 0;
-    visibility: hidden;
   }
 
   .box2 {
@@ -576,7 +605,6 @@
     top: 0;
     margin: 0;
     padding: 0;
-    visibility: hidden;
   }
 
   .box1 {
@@ -599,5 +627,16 @@
     /*border: 1px solid #000000;*/
     bottom: 0;
     background-color: white;
+  }
+
+  .audio1{
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    background-color: #000000;
   }
 </style>

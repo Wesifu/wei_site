@@ -62,32 +62,25 @@
     methods: {
       updateOpen: function (open) {
         this.open = open;
-        if (this.userCode === "" || this.userCode === 'undefined') {
+        let _self = this;
           $.ajax({
             url: "https://qinqinyx.cn/timeLang/updateTimeAxisOpen",
             data: {
-              "userCode": this.userCode,
-              "lsh": this.lsh,
+              "userCode": this.global.userCode,
+              "lsh": _self.lsh,
               "open": open
             },
             type: 'get',
             dataType: 'json',
             timeout: 1000,
             success: function (results) {
-              //var op = $("open").val();
-              //$("#image").remove();
-              //$("#open_" + open).append('<img src="<%=basePath%>images/weisite/check_true.png" style="width: 5%;float: right;" id="image">');
-              //this.open = results
-              //window.location.href = "<%=basePath%>space?groupId=${groupId}&userCode=${userCode}"
-              alert("修改成功");
+
             },
             fail: function (err, status) {
               console.log(err)
             }
           })
-        }else{
-          this.$emit("transferTabIndex",open);
-        }
+
       },
       getOpen: function () {
         alert(this.open+"=====");

@@ -355,7 +355,7 @@
     beforeRouteUpdate(to,from,next){
       this.play = false;
       clearInterval(this.setInterval);
-      this.currentLyric.stop();
+      //this.currentLyric.stop();
       next();
     },
 
